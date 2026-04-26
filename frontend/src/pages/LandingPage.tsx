@@ -554,7 +554,10 @@ export default function LandingPage() {
             </div>
             <span className="text-white font-bold text-sm">AUTO CARE</span>
           </div>
-          <p className="text-sm text-center">© {new Date().getFullYear()} AUTO CARE. Vehicle Service Management System. All rights reserved.</p>
+          <div className="text-sm text-center space-y-1">
+            <p>© {new Date().getFullYear()} AUTO CARE. Vehicle Service Management System. All rights reserved.</p>
+            <p className="text-slate-500">Project by Dilan Sachintha Wijethunga · Student No: 25021971</p>
+          </div>
           <div className="flex gap-5 text-sm">
             <Link to="/login" className="hover:text-orange-400 transition-colors">Login</Link>
             <Link to="/register" className="hover:text-orange-400 transition-colors">Register</Link>
