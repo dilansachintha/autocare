@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuthStore } from './store/authStore';
 
+// Landing Page
+import LandingPage from './pages/LandingPage';
+
 // Auth Pages
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
@@ -45,7 +48,7 @@ function ProtectedRoute({ children, role }: { children: React.ReactNode; role?: 
 
 function RoleRedirect() {
   const { user, isAuthenticated } = useAuthStore();
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <LandingPage />;
   if (user?.role === 'admin') return <Navigate to="/admin/dashboard" replace />;
   if (user?.role === 'mechanic') return <Navigate to="/mechanic/dashboard" replace />;
   return <Navigate to="/customer/dashboard" replace />;
