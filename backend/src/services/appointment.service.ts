@@ -2,7 +2,13 @@ import { Appointment, IAppointment } from '../models/Appointment.model';
 import { Vehicle } from '../models/Vehicle.model';
 import { User } from '../models/User.model';
 import { AppError } from '../middleware/errorHandler';
-import { notifyUser } from './notification.service';
+import {
+  notifyUser,
+  sendAppointmentCancelledEmail,
+  sendAppointmentConfirmationEmail,
+  sendAppointmentStatusEmail,
+  sendMechanicAssignedEmail,
+} from './notification.service';
 
 export const createAppointment = async (
   customerId: string,
@@ -57,6 +63,17 @@ export const createAppointment = async (
       type: 'appointment',
       relatedId: appointment._id.toString(),
     });
+  }
+
+  // Send appointment confirmation email when customer has an email.
+  const customer = await User.findById(customerId).select('name email');
+  if (customer?.email) {
+    await sendAppointmentConfirmationEmail(
+      customer.email,
+      customer.name,
+      new Date(data.scheduledDate).toLocaleDateString(),
+      data.scheduledTime
+    );
   }
 
   return appointment.populate(['customer', 'vehicle']);
@@ -115,6 +132,16 @@ export const updateAppointmentStatus = async (
     relatedId: appointmentId,
   });
 
+  const customer = await User.findById(appointment.customer).select('name email');
+  if (customer?.email) {
+    await sendAppointmentStatusEmail(
+      customer.email,
+      customer.name,
+      status,
+      message
+    );
+  }
+
   return appointment.populate(['customer', 'vehicle', 'mechanic']);
 };
 
@@ -144,6 +171,11 @@ export const assignMechanic = async (
     relatedId: appointmentId,
   });
 
+  const customer = await User.findById(appointment.customer).select('name email');
+  if (customer?.email) {
+    await sendMechanicAssignedEmail(customer.email, customer.name, mechanic.name);
+  }
+
   await notifyUser(mechanicId, {
     title: 'New Job Assigned',
     message: `You have been assigned a new service appointment.`,
@@ -166,8 +198,8 @@ export const getAvailableSlots = async (date: string): Promise<string[]> => {
     status: { $nin: ['cancelled'] },
   }).select('scheduledTime');
 
-  const bookedTimes = booked.map((a) => a.scheduledTime);
-  return allSlots.filter((slot) => !bookedTimes.includes(slot));
+  const bookedTimes = new Set(booked.map((a) => a.scheduledTime));
+  return allSlots.filter((slot) => !bookedTimes.has(slot));
 };
 
 export const cancelAppointment = async (
@@ -200,6 +232,11 @@ export const cancelAppointment = async (
     type: 'appointment',
     relatedId: appointmentId,
   });
+
+  const customer = await User.findById(appointment.customer).select('name email');
+  if (customer?.email) {
+    await sendAppointmentCancelledEmail(customer.email, customer.name);
+  }
 
   return appointment;
 };

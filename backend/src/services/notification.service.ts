@@ -1,6 +1,5 @@
 import { Notification } from '../models/Notification.model';
 import nodemailer from 'nodemailer';
-import { User } from '../models/User.model';
 
 interface NotifyPayload {
   title: string;
@@ -44,7 +43,7 @@ export const markAllAsRead = async (userId: string): Promise<void> => {
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.EMAIL_PORT || '587'),
+    port: Number.parseInt(process.env.EMAIL_PORT || '587', 10),
     secure: false,
     auth: {
       user: process.env.EMAIL_USER,
@@ -53,12 +52,29 @@ const createTransporter = () => {
   });
 };
 
+const hasValidEmailConfig = (): boolean => {
+  const emailUser = process.env.EMAIL_USER?.trim();
+  const emailPass = process.env.EMAIL_PASS?.trim();
+
+  if (!emailUser || !emailPass) {
+    return false;
+  }
+
+  // Ignore template/default placeholder values from sample env files.
+  const invalidTokens = new Set(['your_gmail@gmail.com', 'your_gmail_app_password']);
+  if (invalidTokens.has(emailUser) || invalidTokens.has(emailPass)) {
+    return false;
+  }
+
+  return true;
+};
+
 export const sendEmail = async (
   to: string,
   subject: string,
   html: string
 ): Promise<void> => {
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+  if (!hasValidEmailConfig()) {
     console.log(`📧 Email skipped (no config): To: ${to}, Subject: ${subject}`);
     return;
   }
@@ -124,4 +140,90 @@ export const sendAppointmentConfirmationEmail = async (
     </div>
   `;
   await sendEmail(customerEmail, 'Appointment Confirmed - AUTO CARE', html);
+};
+
+const renderEmailLayout = (heading: string, body: string): string => `
+  <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+    <div style="background: #1a1a2e; padding: 20px; text-align: center;">
+      <h1 style="color: #f5a623; margin: 0;">AUTO CARE</h1>
+    </div>
+    <div style="padding: 24px; background: #f9f9f9;">
+      <h2 style="margin-top: 0;">${heading}</h2>
+      ${body}
+    </div>
+    <div style="background: #1a1a2e; padding: 12px; text-align: center;">
+      <p style="color: #aaa; margin: 0; font-size: 12px;">AUTO CARE Notifications</p>
+    </div>
+  </div>
+`;
+
+export const sendAppointmentStatusEmail = async (
+  customerEmail: string,
+  customerName: string,
+  status: string,
+  note?: string
+): Promise<void> => {
+  const body = `
+    <p>Hi <strong>${customerName}</strong>,</p>
+    <p>Your appointment status has been updated to <strong>${status}</strong>.</p>
+    ${note ? `<p><strong>Update:</strong> ${note}</p>` : ''}
+    <p>Thank you for using AUTO CARE.</p>
+  `;
+  await sendEmail(
+    customerEmail,
+    `Appointment ${status} - AUTO CARE`,
+    renderEmailLayout('Appointment Status Update', body)
+  );
+};
+
+export const sendMechanicAssignedEmail = async (
+  customerEmail: string,
+  customerName: string,
+  mechanicName: string
+): Promise<void> => {
+  const body = `
+    <p>Hi <strong>${customerName}</strong>,</p>
+    <p>Your appointment is now confirmed.</p>
+    <p><strong>${mechanicName}</strong> has been assigned to your service request.</p>
+    <p>We will keep you updated as work progresses.</p>
+  `;
+  await sendEmail(
+    customerEmail,
+    'Mechanic Assigned - AUTO CARE',
+    renderEmailLayout('Mechanic Assigned', body)
+  );
+};
+
+export const sendAppointmentCancelledEmail = async (
+  customerEmail: string,
+  customerName: string
+): Promise<void> => {
+  const body = `
+    <p>Hi <strong>${customerName}</strong>,</p>
+    <p>Your appointment has been cancelled.</p>
+    <p>If this was a mistake, please book a new slot from your dashboard.</p>
+  `;
+  await sendEmail(
+    customerEmail,
+    'Appointment Cancelled - AUTO CARE',
+    renderEmailLayout('Appointment Cancelled', body)
+  );
+};
+
+export const sendPaymentSuccessEmail = async (
+  customerEmail: string,
+  customerName: string,
+  amount: number
+): Promise<void> => {
+  const body = `
+    <p>Hi <strong>${customerName}</strong>,</p>
+    <p>We have received your payment successfully.</p>
+    <p><strong>Amount:</strong> LKR ${amount.toFixed(2)}</p>
+    <p>Thank you for your payment.</p>
+  `;
+  await sendEmail(
+    customerEmail,
+    'Payment Successful - AUTO CARE',
+    renderEmailLayout('Payment Received', body)
+  );
 };

@@ -1,7 +1,8 @@
 import { Router, Response, NextFunction, Request } from 'express';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 import { Appointment } from '../models/Appointment.model';
-import { notifyUser } from '../services/notification.service';
+import { notifyUser, sendPaymentSuccessEmail } from '../services/notification.service';
+import { User } from '../models/User.model';
 import { AppError } from '../middleware/errorHandler';
 import { AuthRequest } from '../types';
 import Stripe from 'stripe';
@@ -37,6 +38,15 @@ const markAppointmentAsPaid = async (appointmentId: string, paymentId: string, a
       type: 'payment',
       relatedId: appointmentId,
     });
+
+    const customer = await User.findById(customerId).select('name email');
+    if (customer?.email) {
+      await sendPaymentSuccessEmail(
+        customer.email,
+        customer.name,
+        Number(appointment.totalActualCost || 0)
+      );
+    }
   }
 };
 

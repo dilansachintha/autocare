@@ -4,6 +4,10 @@ import { User } from '../models/User.model';
 import { Vehicle } from '../models/Vehicle.model';
 import { Inventory } from '../models/Inventory.model';
 import { Appointment } from '../models/Appointment.model';
+import { Notification } from '../models/Notification.model';
+import { Feedback } from '../models/Feedback.model';
+import { Emergency } from '../models/Emergency.model';
+import { Message } from '../models/Message.model';
 
 dotenv.config();
 
@@ -18,6 +22,10 @@ const seed = async () => {
       Vehicle.deleteMany({}),
       Inventory.deleteMany({}),
       Appointment.deleteMany({}),
+      Notification.deleteMany({}),
+      Feedback.deleteMany({}),
+      Emergency.deleteMany({}),
+      Message.deleteMany({}),
     ]);
     console.log('🧹 Cleared existing data');
 
@@ -126,10 +134,14 @@ const seed = async () => {
 
     // ─── SAMPLE APPOINTMENTS ──────────────────────────────────────
     const today = new Date();
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    const twoDaysAgo = new Date(today); twoDaysAgo.setDate(today.getDate() - 2);
     const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
+    const dayAfterTomorrow = new Date(today); dayAfterTomorrow.setDate(today.getDate() + 2);
     const nextWeek = new Date(today); nextWeek.setDate(today.getDate() + 7);
+    const nextTenDays = new Date(today); nextTenDays.setDate(today.getDate() + 10);
 
-    await Appointment.create({
+    const completedPaid = await Appointment.create({
       customer: customer1._id,
       vehicle: vehicle1._id,
       mechanic: mechanic1._id,
@@ -141,6 +153,7 @@ const seed = async () => {
       totalEstimatedCost: 3500,
       totalActualCost: 3500,
       paymentStatus: 'paid',
+      paymentId: 'pi_seed_paid_001',
       progressUpdates: [
         { message: 'Appointment confirmed', timestamp: new Date(), updatedBy: admin._id },
         { message: 'Service started', timestamp: new Date(), updatedBy: mechanic1._id },
@@ -148,7 +161,7 @@ const seed = async () => {
       ],
     });
 
-    await Appointment.create({
+    const pendingUrgent = await Appointment.create({
       customer: customer1._id,
       vehicle: vehicle2._id,
       services: [{ serviceType: 'Brake Service', description: 'Brake pads replacement', estimatedCost: 8500, status: 'pending' }],
@@ -161,7 +174,7 @@ const seed = async () => {
       notes: 'Brake noise when stopping',
     });
 
-    await Appointment.create({
+    const inProgress = await Appointment.create({
       customer: customer2._id,
       vehicle: vehicle3._id,
       mechanic: mechanic2._id,
@@ -193,7 +206,228 @@ const seed = async () => {
       paymentStatus: 'pending',
     });
 
+    const completedPendingPayment = await Appointment.create({
+      customer: customer1._id,
+      vehicle: vehicle1._id,
+      mechanic: mechanic1._id,
+      services: [
+        { serviceType: 'AC Service', description: 'AC cooling diagnosis and gas top-up', estimatedCost: 6500, status: 'completed' },
+      ],
+      scheduledDate: yesterday,
+      scheduledTime: '15:00',
+      status: 'completed',
+      priority: 'normal',
+      totalEstimatedCost: 6500,
+      totalActualCost: 6200,
+      paymentStatus: 'pending',
+      progressUpdates: [
+        { message: 'Appointment confirmed', timestamp: new Date(), updatedBy: admin._id },
+        { message: 'AC service started', timestamp: new Date(), updatedBy: mechanic1._id },
+        { message: 'Service completed - awaiting payment', timestamp: new Date(), updatedBy: mechanic1._id },
+      ],
+    });
+
+    const cancelledAppointment = await Appointment.create({
+      customer: customer1._id,
+      vehicle: vehicle2._id,
+      services: [
+        { serviceType: 'Engine Tune-Up', description: 'Engine tuning and diagnostics', estimatedCost: 12000, status: 'pending' },
+      ],
+      scheduledDate: dayAfterTomorrow,
+      scheduledTime: '13:30',
+      status: 'cancelled',
+      priority: 'normal',
+      totalEstimatedCost: 12000,
+      paymentStatus: 'pending',
+      notes: 'Customer rescheduled due to travel',
+    });
+
+    const confirmedMechanicJob = await Appointment.create({
+      customer: customer2._id,
+      vehicle: vehicle3._id,
+      mechanic: mechanic2._id,
+      services: [
+        { serviceType: 'Battery Check', description: 'Battery health and charging system check', estimatedCost: 3000, status: 'pending' },
+      ],
+      scheduledDate: nextTenDays,
+      scheduledTime: '09:30',
+      status: 'confirmed',
+      priority: 'normal',
+      totalEstimatedCost: 3000,
+      paymentStatus: 'pending',
+    });
+
+    const historicalPaid = await Appointment.create({
+      customer: customer2._id,
+      vehicle: vehicle3._id,
+      mechanic: mechanic2._id,
+      services: [
+        { serviceType: 'Full Service', description: 'Periodic maintenance package', estimatedCost: 18000, status: 'completed' },
+      ],
+      scheduledDate: twoDaysAgo,
+      scheduledTime: '08:30',
+      status: 'completed',
+      priority: 'normal',
+      totalEstimatedCost: 18000,
+      totalActualCost: 18200,
+      paymentStatus: 'paid',
+      paymentId: 'pi_seed_paid_002',
+      progressUpdates: [
+        { message: 'Vehicle checked in', timestamp: new Date(), updatedBy: mechanic2._id },
+        { message: 'Service completed and delivered', timestamp: new Date(), updatedBy: mechanic2._id },
+      ],
+    });
+
     console.log('📅 Appointments seeded');
+
+    // ─── FEEDBACK ──────────────────────────────────────────────────
+    await Feedback.insertMany([
+      {
+        customer: customer1._id,
+        appointment: completedPaid._id,
+        mechanic: mechanic1._id,
+        rating: 5,
+        comment: 'Quick service and clear communication. Very satisfied.',
+        serviceQuality: 5,
+        timeliness: 5,
+        valueForMoney: 4,
+      },
+      {
+        customer: customer2._id,
+        appointment: historicalPaid._id,
+        mechanic: mechanic2._id,
+        rating: 4,
+        comment: 'Good overall service. Waiting area could be improved.',
+        serviceQuality: 4,
+        timeliness: 4,
+        valueForMoney: 4,
+      },
+    ]);
+    console.log('⭐ Feedback seeded');
+
+    // ─── EMERGENCY REQUESTS ────────────────────────────────────────
+    await Emergency.insertMany([
+      {
+        customer: customer1._id,
+        vehicle: vehicle2._id,
+        description: 'Engine overheated near highway exit',
+        location: 'Southern Expressway - Exit 102',
+        phone: customer1.phone,
+        status: 'assigned',
+        assignedMechanic: mechanic1._id,
+      },
+      {
+        customer: customer2._id,
+        vehicle: vehicle3._id,
+        description: 'Flat tyre at office parking lot',
+        location: 'Galle Fort - Main Street',
+        phone: customer2.phone,
+        status: 'open',
+      },
+      {
+        customer: customer1._id,
+        vehicle: vehicle1._id,
+        description: 'Battery failure in the morning',
+        location: 'Matara Clock Tower',
+        phone: customer1.phone,
+        status: 'resolved',
+        assignedMechanic: mechanic2._id,
+      },
+    ]);
+    console.log('🚨 Emergency requests seeded');
+
+    // ─── MESSAGES ──────────────────────────────────────────────────
+    await Message.insertMany([
+      {
+        sender: customer1._id,
+        recipient: mechanic1._id,
+        content: 'Can you confirm if brake pads are in stock for tomorrow?',
+        appointment: pendingUrgent._id,
+      },
+      {
+        sender: mechanic1._id,
+        recipient: customer1._id,
+        content: 'Yes, parts are available. We can complete it within 2 hours.',
+        appointment: pendingUrgent._id,
+        isRead: true,
+      },
+      {
+        sender: mechanic2._id,
+        recipient: customer2._id,
+        content: 'Your full service is almost complete. Ready by 4 PM.',
+        appointment: inProgress._id,
+      },
+      {
+        sender: customer2._id,
+        recipient: mechanic2._id,
+        content: 'Great, thank you. Please also check wheel alignment.',
+        appointment: inProgress._id,
+        isRead: true,
+      },
+    ]);
+    console.log('💬 Messages seeded');
+
+    // ─── NOTIFICATIONS ─────────────────────────────────────────────
+    await Notification.insertMany([
+      {
+        recipient: customer1._id,
+        title: 'Appointment Confirmed',
+        message: 'Your brake service appointment has been confirmed for tomorrow at 10:30.',
+        type: 'appointment',
+        relatedId: pendingUrgent._id,
+      },
+      {
+        recipient: customer1._id,
+        title: 'Payment Pending',
+        message: 'Your AC service is completed. Please complete payment to close the job.',
+        type: 'payment',
+        relatedId: completedPendingPayment._id,
+      },
+      {
+        recipient: customer2._id,
+        title: 'Service In Progress',
+        message: 'Your full service is currently in progress.',
+        type: 'service',
+        relatedId: inProgress._id,
+      },
+      {
+        recipient: mechanic1._id,
+        title: 'New Urgent Job',
+        message: 'A new urgent brake service request has been assigned.',
+        type: 'appointment',
+        relatedId: pendingUrgent._id,
+      },
+      {
+        recipient: mechanic2._id,
+        title: 'Upcoming Assignment',
+        message: 'You have a confirmed battery check booking in 10 days.',
+        type: 'appointment',
+        relatedId: confirmedMechanicJob._id,
+      },
+      {
+        recipient: admin._id,
+        title: 'Emergency Request Open',
+        message: 'A new roadside emergency request was created and needs dispatch.',
+        type: 'emergency',
+      },
+      {
+        recipient: customer1._id,
+        title: 'Appointment Cancelled',
+        message: 'Your engine tune-up appointment was cancelled successfully.',
+        type: 'appointment',
+        relatedId: cancelledAppointment._id,
+        isRead: true,
+      },
+      {
+        recipient: customer2._id,
+        title: 'Payment Received',
+        message: 'Payment received for your completed full service appointment.',
+        type: 'payment',
+        relatedId: historicalPaid._id,
+        isRead: true,
+      },
+    ]);
+    console.log('🔔 Notifications seeded');
 
     console.log('\n✅ ─────────────────────────────────────────────');
     console.log('✅  Database seeded successfully!');
@@ -202,6 +436,7 @@ const seed = async () => {
     console.log('  Admin    → admin@autocare.com      / Admin@123');
     console.log('  Mechanic → mechanic@autocare.com   / Mechanic@123');
     console.log('  Customer → customer@autocare.com   / Customer@123\n');
+    console.log('  Customer → customer2@autocare.com  / Customer@123\n');
 
     process.exit(0);
   } catch (err) {
