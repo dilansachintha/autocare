@@ -17,7 +17,7 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();
-      window.location.href = '/login';
+      globalThis.location.href = '/login';
     }
     return Promise.reject(error);
   }
@@ -119,7 +119,8 @@ export const messageAPI = {
 
 // ─── Payments ──────────────────────────────────────────────────────────────
 export const paymentAPI = {
-  createIntent: (appointmentId: string) => api.post('/payments/create-intent', { appointmentId }),
+  createCheckoutSession: (appointmentId: string, successUrl: string, cancelUrl: string) =>
+    api.post('/payments/create-checkout-session', { appointmentId, successUrl, cancelUrl }),
   confirm: (appointmentId: string, paymentIntentId: string) =>
     api.post('/payments/confirm', { appointmentId, paymentIntentId }),
   getHistory: () => api.get('/payments/history'),

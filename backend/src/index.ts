@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import { createServer } from 'http';
+import { createServer } from 'node:http';
 import { Server } from 'socket.io';
 import dotenv from 'dotenv';
 import { connectDB } from './config/database';
@@ -17,7 +17,7 @@ import serviceRoutes from './routes/service.routes';
 import inventoryRoutes from './routes/inventory.routes';
 import mechanicRoutes from './routes/mechanic.routes';
 import adminRoutes from './routes/admin.routes';
-import paymentRoutes from './routes/payment.routes';
+import paymentRoutes, { stripeWebhookHandler } from './routes/payment.routes';
 import notificationRoutes from './routes/notification.routes';
 import feedbackRoutes from './routes/feedback.routes';
 import emergencyRoutes from './routes/emergency.routes';
@@ -42,6 +42,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(morgan('dev'));
+app.post('/api/payments/webhook', express.raw({ type: 'application/json' }), stripeWebhookHandler);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(rateLimiter);
