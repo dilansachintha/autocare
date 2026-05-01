@@ -1,98 +1,213 @@
-# 🚗 AUTO CARE — Complete Developer Guide (Cursor)
+# AUTO CARE - Project Guide and Report
 
-> Intelligent Vehicle Service Center Management System  
-> React + TypeScript + Node.js + Express + MongoDB + Tailwind CSS
+Intelligent Vehicle Service Center Management System
 
----
+## 1) Project Overview
 
-## 📁 Project Structure
+AUTO CARE is a full-stack web application for managing a vehicle service center.  
+It supports three user roles:
 
-```
+- Admin: manages users, mechanics, appointments, inventory, and analytics
+- Mechanic: handles assigned jobs and updates service progress
+- Customer: registers vehicles, books appointments, tracks service, and makes payments
+
+The solution is built with a React frontend and a Node.js/Express backend, connected to MongoDB.
+
+## 2) Core Objectives
+
+- Digitalize the full service workflow from booking to completion
+- Provide role-based access for secure operations
+- Improve communication with in-app, email, and SMS notifications
+- Track inventory and operational performance from an admin dashboard
+
+## 3) Technology Stack
+
+- Frontend: React 18, TypeScript, Vite, Tailwind CSS
+- State Management: Zustand (auth), TanStack Query
+- Visualization: Recharts
+- Backend: Node.js, Express, TypeScript
+- Database: MongoDB with Mongoose
+- Authentication: JWT + bcryptjs
+- Real-time: Socket.IO
+- Notifications: Nodemailer (email), TextBelt (SMS)
+- Payments: Stripe sandbox/mock flow
+
+## 4) High-Level Architecture
+
+### Frontend
+
+- UI pages by role (`admin`, `mechanic`, `customer`)
+- Shared layout components and route protection
+- Central API service layer for HTTP communication
+- Auth state and token persistence via store
+
+### Backend
+
+- Route layer receives API requests
+- Controller layer handles request/response mapping
+- Service layer contains business logic
+- Model layer defines MongoDB schemas and persistence
+- Middleware handles auth, role checks, error handling, and rate limiting
+
+## 5) Project Structure
+
+```text
 autocare/
 ├── backend/
 │   ├── src/
-│   │   ├── config/         # Database connection
-│   │   ├── controllers/    # Route handlers (thin layer)
-│   │   ├── middleware/     # Auth, error handler, rate limiter
-│   │   ├── models/         # Mongoose schemas
-│   │   ├── routes/         # Express routers
-│   │   ├── services/       # Business logic (fat layer)
-│   │   ├── types/          # TypeScript interfaces
-│   │   └── utils/          # Seeder
+│   │   ├── config/
+│   │   ├── controllers/
+│   │   ├── middleware/
+│   │   ├── models/
+│   │   ├── routes/
+│   │   ├── services/
+│   │   ├── types/
+│   │   └── utils/
 │   ├── .env.example
-│   ├── package.json
-│   └── tsconfig.json
-│
+│   └── package.json
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
-│   │   │   └── layout/     # CustomerLayout, MechanicLayout, AdminLayout
 │   │   ├── pages/
-│   │   │   ├── auth/       # Login, Register
-│   │   │   ├── customer/   # Dashboard, Appointments, Vehicles...
-│   │   │   ├── mechanic/   # Dashboard, Jobs, JobDetail
-│   │   │   └── admin/      # Dashboard, Users, Inventory...
-│   │   ├── services/       # Axios API client
-│   │   ├── store/          # Zustand auth store
-│   │   └── types/          # TypeScript types
+│   │   ├── services/
+│   │   ├── store/
+│   │   └── types/
 │   ├── .env.example
-│   ├── package.json
-│   └── tailwind.config.js
-│
-├── CREDENTIALS.md          # ← All login credentials here
-└── CURSOR_GUIDE.md         # ← This file
+│   └── package.json
+├── CREDENTIALS.md
+└── CURSOR_GUIDE.md
 ```
 
----
+## 6) Frontend Module Summary
 
-## 🚀 Step-by-Step Setup in Cursor
+### Authentication and Access
 
-### Step 1 — Prerequisites
+- Login and registration pages
+- JWT-based session handling
+- Role-based route redirection after login
 
-Install these before starting:
+### Customer Features
 
-```bash
-# Check Node.js version (need 18+)
-node --version
+- Dashboard overview
+- Vehicle management
+- Appointment booking and tracking
+- Emergency request submission
+- Payment and feedback flows
 
-# Install MongoDB Community Edition
-# Windows: https://www.mongodb.com/try/download/community
-# Mac: brew install mongodb-community
-# Ubuntu: sudo apt install mongodb
+### Mechanic Features
 
-# Start MongoDB
-# Windows: net start MongoDB
-# Mac: brew services start mongodb-community
-# Ubuntu: sudo systemctl start mongod
-```
+- Assigned jobs list
+- Job detail and status updates
+- Service progress handling
 
----
+### Admin Features
 
-### Step 2 — Open Project in Cursor
+- Dashboard and analytics
+- User and mechanic management
+- Appointment assignment and status control
+- Inventory and stock monitoring
 
-1. Open **Cursor**
-2. Go to **File → Open Folder**
-3. Select the `autocare/` folder
-4. You'll see `backend/` and `frontend/` side by side
+## 7) Backend Module Summary
 
----
+### Authentication Module
 
-### Step 3 — Setup Backend
+- Register/login
+- Profile fetch/update
+- Password update
+- Token verification
 
-Open Cursor terminal (`Ctrl + \`` or `View → Terminal`):
+### Appointments Module
 
-```bash
-# Navigate to backend
-cd backend
+- Slot availability checks
+- Appointment creation
+- Assignment to mechanics
+- Status and cancellation handling
 
-# Install dependencies
-npm install
+### Users and Vehicles Module
 
-# Copy env file
-cp .env.example .env
-```
+- Customer profile operations
+- Vehicle CRUD endpoints
 
-Now edit `.env` in Cursor — **minimum required** to run:
+### Inventory Module
+
+- Inventory CRUD
+- Restock operations
+- Low-stock and statistics endpoints
+
+### Emergency Module
+
+- Emergency request creation
+- Assignment and resolution workflow
+
+### Notification Module
+
+- In-app notification creation and retrieval
+- Read/unread status tracking
+- Email and SMS sending utilities
+
+### Payment Module
+
+- Payment status updates
+- Completion-related notification triggers
+
+## 8) API Endpoint Groups
+
+### Auth
+
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/profile`
+- `PUT /api/auth/profile`
+- `PUT /api/auth/change-password`
+- `GET /api/auth/verify`
+
+### Appointments
+
+- `GET /api/appointments/slots`
+- `POST /api/appointments`
+- `GET /api/appointments/my`
+- `GET /api/appointments/mechanic`
+- `GET /api/appointments`
+- `GET /api/appointments/:id`
+- `PUT /api/appointments/:id/status`
+- `PUT /api/appointments/:id/assign`
+- `PUT /api/appointments/:id/cancel`
+
+### Admin
+
+- `GET /api/admin/dashboard`
+- `GET /api/admin/users`
+- `PUT /api/admin/users/:id/toggle`
+- `POST /api/admin/mechanics`
+- `GET /api/admin/analytics`
+
+### Inventory
+
+- `GET /api/inventory`
+- `GET /api/inventory/stats`
+- `GET /api/inventory/low-stock`
+- `POST /api/inventory`
+- `PUT /api/inventory/:id`
+- `PUT /api/inventory/:id/restock`
+- `DELETE /api/inventory/:id`
+
+### Vehicles
+
+- `GET /api/users/vehicles`
+- `POST /api/users/vehicles`
+- `PUT /api/users/vehicles/:id`
+- `DELETE /api/users/vehicles/:id`
+
+### Emergency
+
+- `POST /api/emergency`
+- `GET /api/emergency`
+- `PUT /api/emergency/:id/assign`
+- `PUT /api/emergency/:id/resolve`
+
+## 9) Environment Configuration
+
+### Backend `.env` (minimum)
 
 ```env
 NODE_ENV=development
@@ -103,297 +218,131 @@ JWT_EXPIRES_IN=7d
 FRONTEND_URL=http://localhost:5173
 ```
 
-For email notifications (optional), add Gmail app password:
+Optional:
+
 ```env
 EMAIL_USER=your_gmail@gmail.com
 EMAIL_PASS=your_16_char_app_password
+TEXTBELT_KEY=textbelt
 ```
 
----
+### Frontend `.env`
 
-### Step 4 — Seed the Database
-
-```bash
-# Still inside backend/
-npm run seed
-```
-
-You should see:
-```
-✅ Connected to MongoDB
-🧹 Cleared existing data
-👥 Users seeded
-🚗 Vehicles seeded
-📦 Inventory seeded
-📅 Appointments seeded
-✅ Database seeded successfully!
-
-🔑 Login Credentials:
-  Admin    → admin@autocare.com      / Admin@123
-  Mechanic → mechanic@autocare.com   / Mechanic@123
-  Customer → customer@autocare.com   / Customer@123
-```
-
----
-
-### Step 5 — Start Backend
-
-```bash
-# In backend/ folder
-npm run dev
-```
-
-You should see:
-```
-✅ MongoDB Connected: localhost
-🚗 AUTO CARE Server running on port 5000
-📡 Environment: development
-🌐 API URL: http://localhost:5000/api
-🔧 Health: http://localhost:5000/api/health
-```
-
-Test it: open browser → `http://localhost:5000/api/health`
-
----
-
-### Step 6 — Setup Frontend
-
-Open a **new terminal** in Cursor (`+` button in terminal panel):
-
-```bash
-# Navigate to frontend
-cd frontend
-
-# Install dependencies
-npm install
-
-# Copy env file
-cp .env.example .env
-```
-
-The `.env` file for frontend:
 ```env
 VITE_API_URL=http://localhost:5000/api
 VITE_SOCKET_URL=http://localhost:5000
 VITE_APP_NAME=AUTO CARE
 ```
 
----
+## 10) Local Setup and Run
 
-### Step 7 — Start Frontend
+### Backend
 
 ```bash
-# In frontend/ folder
+cd backend
+npm install
+cp .env.example .env
+npm run seed
 npm run dev
 ```
 
-You should see:
-```
-  VITE v5.x.x  ready in 500ms
-  ➜  Local:   http://localhost:5173/
-```
+### Frontend
 
-Open browser → `http://localhost:5173`
-
----
-
-### Step 8 — Login & Test
-
-Use the **Demo Login buttons** on the login page for quick access, or use the credentials from `CREDENTIALS.md`.
-
-| Role     | Redirect After Login        |
-|----------|-----------------------------|
-| Admin    | `/admin/dashboard`          |
-| Mechanic | `/mechanic/dashboard`       |
-| Customer | `/customer/dashboard`       |
-
----
-
-## 🔌 API Endpoints Reference
-
-### Auth
-```
-POST   /api/auth/register
-POST   /api/auth/login
-GET    /api/auth/profile         (authenticated)
-PUT    /api/auth/profile         (authenticated)
-PUT    /api/auth/change-password (authenticated)
-GET    /api/auth/verify          (authenticated)
-```
-
-### Appointments
-```
-GET    /api/appointments/slots?date=2024-12-25   (get available slots)
-POST   /api/appointments                          (customer)
-GET    /api/appointments/my                       (customer)
-GET    /api/appointments/mechanic                 (mechanic)
-GET    /api/appointments                          (admin)
-GET    /api/appointments/:id
-PUT    /api/appointments/:id/status               (mechanic/admin)
-PUT    /api/appointments/:id/assign               (admin)
-PUT    /api/appointments/:id/cancel
-```
-
-### Admin
-```
-GET    /api/admin/dashboard
-GET    /api/admin/users
-PUT    /api/admin/users/:id/toggle
-POST   /api/admin/mechanics
-GET    /api/admin/analytics
-```
-
-### Inventory
-```
-GET    /api/inventory
-GET    /api/inventory/stats
-GET    /api/inventory/low-stock
-POST   /api/inventory              (admin)
-PUT    /api/inventory/:id          (admin)
-PUT    /api/inventory/:id/restock  (admin)
-DELETE /api/inventory/:id          (admin)
-```
-
-### Vehicles
-```
-GET    /api/users/vehicles         (customer)
-POST   /api/users/vehicles         (customer)
-PUT    /api/users/vehicles/:id     (customer)
-DELETE /api/users/vehicles/:id     (customer)
-```
-
-### Emergency
-```
-POST   /api/emergency              (customer)
-GET    /api/emergency              (admin/mechanic)
-PUT    /api/emergency/:id/assign   (admin)
-PUT    /api/emergency/:id/resolve  (admin/mechanic)
-```
-
-### Notifications, Messages, Feedback, Payments — see source files
-
----
-
-## 🔧 Cursor AI Tips
-
-Use these prompts in Cursor Chat (`Ctrl+L`) to extend the project:
-
-```
-"Add a real-time chat widget between customer and mechanic 
- using socket.io — show in the appointment detail page"
-
-"Add invoice PDF generation for completed appointments 
- using pdfkit in the backend"
-
-"Add a Google Maps embed (free iframe, no API key needed) 
- on the emergency page to help customer share location"
-
-"Add dark mode support using Tailwind's dark: classes 
- and save preference in localStorage"
-
-"Add SMS notification when appointment status changes 
- using the existing TextBelt integration in notification.service.ts"
-
-"Create an admin report page that exports appointment 
- data as CSV using a download button"
-```
-
----
-
-## 🐛 Common Issues & Fixes
-
-### MongoDB connection error
 ```bash
-# Make sure MongoDB is running
-sudo systemctl start mongod        # Linux
-brew services start mongodb-community  # Mac
-net start MongoDB                  # Windows
+cd frontend
+npm install
+cp .env.example .env
+npm run dev
 ```
 
-### Port already in use
+Access:
+
+- Backend health: `http://localhost:5000/api/health`
+- Frontend app: `http://localhost:5173`
+
+## 11) Main User Flows
+
+### Customer Flow
+
+1. Register/login
+2. Add vehicle
+3. Select appointment slot and book
+4. Receive status updates
+5. Complete payment
+6. Submit feedback
+
+### Admin Flow
+
+1. View dashboard metrics
+2. Manage users/mechanics
+3. Assign appointments
+4. Monitor inventory levels
+5. Review analytics
+
+### Mechanic Flow
+
+1. Open assigned jobs
+2. Update work progress and status
+3. Complete service tasks
+
+## 12) Business Rules (Important)
+
+- Only authenticated users can access protected endpoints
+- Role guards control admin/mechanic/customer-specific operations
+- Appointment status transitions are role-controlled
+- Inventory updates are admin-only operations
+- Notification triggers occur on major lifecycle events
+
+## 13) Testing Checklist
+
+- Login works for admin, mechanic, customer
+- Appointment booking and assignment flow works end to end
+- Mechanic can update service status
+- Admin can manage inventory and users
+- Email/SMS paths fail gracefully when config is not set
+- Payment completion updates appointment state correctly
+
+## 14) Common Issues and Fixes
+
+### MongoDB not connected
+
+- Ensure MongoDB service is running
+- Verify `MONGODB_URI` in backend `.env`
+
+### CORS errors
+
+- Confirm `FRONTEND_URL` is correct in backend `.env`
+- Ensure frontend and backend URLs match running ports
+
+### Port conflicts
+
 ```bash
-# Kill process on port 5000
 npx kill-port 5000
-# Kill process on port 5173
 npx kill-port 5173
 ```
 
-### TypeScript errors in Cursor
-```bash
-# Rebuild
-cd backend && npm run build
-```
+### JWT 401 errors
 
-### CORS error in browser
-- Make sure `FRONTEND_URL=http://localhost:5173` in backend `.env`
-- Make sure both servers are running
+- Re-login to refresh token
+- Verify `JWT_SECRET` exists in backend `.env`
 
-### JWT expired / 401 errors
-- Click the logout button and log in again
-- Check `JWT_SECRET` is set in `.env`
+## 15) Submission Notes (Important)
 
----
+For source-code submission:
 
-## 📦 Tech Stack Summary
+- Keep implementation files clean and readable
+- Remove unnecessary inline comments from source code
+- Keep only essential comments where logic is complex
+- Do not include secrets in `.env`; submit `.env.example` instead
+- Ensure project runs from fresh install using setup steps above
 
-| Layer      | Technology                                      |
-|------------|-------------------------------------------------|
-| Frontend   | React 18, TypeScript, Vite, TailwindCSS         |
-| State      | Zustand (auth), TanStack Query (server state)   |
-| Charts     | Recharts                                         |
-| Backend    | Node.js, Express, TypeScript                    |
-| Database   | MongoDB, Mongoose                               |
-| Auth       | JWT (jsonwebtoken), bcryptjs                    |
-| Real-time  | Socket.IO                                       |
-| Email      | Nodemailer (Gmail SMTP — free)                  |
-| SMS        | TextBelt (1 free SMS/day, no signup)            |
-| Maps       | Removed (replaced with text location field)     |
-| Payment    | Stripe Sandbox (mock mode — no real charges)    |
+## 16) Future Enhancements
+
+- Advanced reporting export (CSV/PDF)
+- Real-time chat for customer-mechanic communication
+- Push notifications
+- Service history insights and predictive maintenance
 
 ---
 
-## 🏗️ Adding New Features (Pattern)
-
-Follow this pattern for every new feature:
-
-```
-1. Create Model  →  backend/src/models/Feature.model.ts
-2. Create Service →  backend/src/services/feature.service.ts  (business logic)
-3. Create Controller → backend/src/controllers/feature.controller.ts  (thin, calls service)
-4. Create Router →  backend/src/routes/feature.routes.ts  (add auth middleware)
-5. Register Router → backend/src/index.ts  (app.use('/api/feature', featureRoutes))
-6. Add API call → frontend/src/services/api.ts
-7. Create Page  →  frontend/src/pages/.../Feature.tsx
-8. Add Route   →  frontend/src/App.tsx
-9. Add Nav link →  frontend/src/components/layout/[Role]Layout.tsx
-```
-
----
-
-## 🚀 Production Deployment
-
-### Backend (Railway / Render — free tier)
-```bash
-cd backend
-npm run build
-# Set environment variables in Railway/Render dashboard
-# Deploy dist/ folder
-```
-
-### Frontend (Vercel / Netlify — free)
-```bash
-cd frontend
-npm run build
-# Deploy dist/ folder
-# Set VITE_API_URL to your backend URL
-```
-
-### MongoDB (MongoDB Atlas — free 512MB)
-1. Create account at mongodb.com/cloud/atlas
-2. Create free cluster
-3. Get connection string
-4. Replace `MONGODB_URI` in backend `.env`
-
----
-
-*AUTO CARE — Dilan Sachintha Wijethunga — COM646 Project*
+AUTO CARE - Final Year Project Report Guide

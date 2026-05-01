@@ -39,7 +39,6 @@ export const markAllAsRead = async (userId: string): Promise<void> => {
   await Notification.updateMany({ recipient: userId, isRead: false }, { isRead: true });
 };
 
-// Email notification via Nodemailer (Free with Gmail SMTP)
 const createTransporter = () => {
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
@@ -60,7 +59,6 @@ const hasValidEmailConfig = (): boolean => {
     return false;
   }
 
-  // Ignore template/default placeholder values from sample env files.
   const invalidTokens = new Set(['your_gmail@gmail.com', 'your_gmail_app_password']);
   if (invalidTokens.has(emailUser) || invalidTokens.has(emailPass)) {
     return false;
@@ -92,7 +90,6 @@ export const sendEmail = async (
   }
 };
 
-// Free SMS via TextBelt (1 free SMS/day, no signup)
 export const sendSMS = async (phone: string, message: string): Promise<void> => {
   try {
     const key = process.env.TEXTBELT_KEY || 'textbelt';
@@ -135,7 +132,7 @@ export const sendAppointmentConfirmationEmail = async (
         <p>Thank you for choosing AUTO CARE!</p>
       </div>
       <div style="background: #1a1a2e; padding: 15px; text-align: center;">
-        <p style="color: #888; margin: 0; font-size: 12px;">© 2024 AUTO CARE. All rights reserved.</p>
+        <p style="color: #888; margin: 0; font-size: 12px;">© 2026 AUTO CARE. All rights reserved.</p>
       </div>
     </div>
   `;
